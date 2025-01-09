@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Welcome</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background: linear-gradient(to bottom right, #4facfe, #00f2fe);
+            color: #333;
+        }
+        .container {
+            background: #fff;
+            padding: 20px 30px;
+            border-radius: 10px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+            max-width: 400px;
+            width: 100%;
+        }
+        h1 {
+            font-size: 1.8rem;
+            margin-bottom: 20px;
+            text-align: center;
+            color: #333;
+        }
+        form {
+            display: flex;
+            flex-direction: column;
+        }
+        label {
+            font-size: 1rem;
+            margin-bottom: 5px;
+        }
+        input, select, button {
+            padding: 10px;
+            margin-bottom: 15px;
+            font-size: 1rem;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            outline: none;
+        }
+        input:focus, select:focus {
+            border-color: #4facfe;
+            box-shadow: 0 0 5px rgba(79, 172, 254, 0.5);
+        }
+        button {
+            background: #4facfe;
+            color: #fff;
+            border: none;
+            cursor: pointer;
+            transition: background 0.3s ease;
+        }
+        button:hover {
+            background: #00f2fe;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <h1>Add New Client</h1>
+    <form action="/save" method="post">
+        <label for="name">Name:</label>
+        <input type="text" id="name" name="name" required>
+
+        <label for="contact">Contact:</label>
+        <input type="text" id="contact" name="contact" required>
+
+        <label for="category">Category:</label>
+        <select id="category" name="category" required>
+            <option value="">--Select--</option>
+            <option value="juvenile">Juvenile</option>
+            <option value="junior1">Junior 1</option>
+            <option value="junior2">Junior 2</option>
+            <option value="youth">Youth</option>
+            <option value="under21">Under 21</option>
+            <option value="adult">Adult</option>
+            <option value="senior">Senior</option>
+        </select>
+
+        <label for="date">Date:</label>
+        <input type="date" id="date" name="date" required>
+
+        <label for="time">Time:</label>
+        <input type="time" id="time" name="time" required>
+
+        <label for="gender">Gender:</label>
+        <select id="gender" name="gender" required>
+            <option value="">--Select--</option>
+            <option value="boy">Boy</option>
+            <option value="girl">Girl</option>
+        </select>
+
+        <button type="submit">Submit</button>
+        <a href="/" class="btn">Back to Menu</a>
+    </form>
+</div>
+</body>
+</html>
