@@ -55,8 +55,8 @@
 <body>
 <h1 th:text="'Calendar: ' + ${month} + ' ' + ${year}"></h1>
 <div class="navigation">
-    <a th:href="@{/calendar(year=${prevYear}, month=${prevMonth})}">&laquo; Назад</a>
-    <a th:href="@{/calendar(year=${nextYear}, month=${nextMonth})}">Вперед &raquo;</a>
+    <a th:href="@{/calendar(year=${prevYear}, month=${prevMonth})}">&laquo; 'Back'</a>
+    <a th:href="@{/calendar(year=${nextYear}, month=${nextMonth})}">Forward &raquo;</a>
 </div>
 <table>
     <thead>
