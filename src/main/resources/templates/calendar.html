@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Calendar</title>
+    <style>
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            text-align: center;
+            padding: 8px;
+        }
+        th {
+            background-color: #f2f2f2;
+        }
+    </style>
+</head>
+<body>
+<h1 th:text ="'Calendar: ' + ${month} + ' ' + ${year}"></h1>
+<table>
+    <thead>
+    <tr>
+        <th>Mon</th>
+        <th>Tue</th>
+        <th>Wed</th>
+        <th>Thu</th>
+        <th>Fri</th>
+        <th>Sat</th>
+        <th>Sun</th>
+    </tr>
+    </thead>
+    <tbody>
+    <tr th:each="day, dayStat : ${days}">
+        <td th:text="${day}" th:if="${day != ''}"></td>
+        <td th:if="${day == ''}"></td>
+        <th:block th:if="${dayStat.index % 7 == 6}"></th:block>
+    </tr>
+    </tbody>
+</table>
+</body>
+</html>
