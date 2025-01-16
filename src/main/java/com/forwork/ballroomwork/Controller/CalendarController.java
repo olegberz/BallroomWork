@@ -1,46 +1,79 @@
 package com.forwork.ballroomwork.Controller;
 
+import com.google.api.client.googleapis.auth.oauth2.GoogleCredential;
+import com.google.api.client.http.javanet.NetHttpTransport;
+import com.google.api.client.json.JsonFactory;
+import com.google.api.client.json.gson.GsonFactory;
+import com.google.api.services.calendar.Calendar;
+import com.google.api.services.calendar.model.Event;
+import com.google.api.services.calendar.model.EventDateTime;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 
-import java.util.ArrayList;
-import java.util.Calendar;
+import java.io.IOException;
+import java.security.GeneralSecurityException;
 import java.util.List;
 
 @Controller
 public class CalendarController {
 
+    private static final JsonFactory JSON_FACTORY = GsonFactory.getDefaultInstance();
+    private static final NetHttpTransport HTTP_TRANSPORT = new NetHttpTransport();
+    private static final String CALENDAR = "https://www.googleapis.com/auth/calendar";
+    private static final String CALENDAR_EVENTS = "https://www.googleapis.com/auth/calendar.events";
+
+    private Calendar getService() throws GeneralSecurityException, IOException {
+        GoogleCredential credentials = GoogleCredential.fromStream(
+                        getClass().getResourceAsStream("/credentials.json"))
+                .createScoped(List.of(CALENDAR, CALENDAR_EVENTS));
+
+        return new Calendar.Builder(HTTP_TRANSPORT, JSON_FACTORY, credentials)
+                .setApplicationName("BallroomWork")
+                .build();
+    }
+
     @GetMapping("/calendar")
-    public String getCalendar(Model model) {
+    public String getCalendar(){
+        return "/calendar";
+    }
 
-        Calendar calendar = Calendar.getInstance();
+    @PostMapping("/calendar/add-event")
+    public String addEvent(
+            @RequestParam String summary,
+            @RequestParam String description,
+            @RequestParam String startDateTime,
+            @RequestParam String endDateTime,
+            Model model) {
+        try {
+            Calendar service = getService();
 
-        calendar.set(Calendar.YEAR, 2025);
-        calendar.set(Calendar.MONTH, Calendar.JANUARY);
+            Event event = new Event()
+                    .setSummary(summary)
+                    .setDescription(description);
 
-        int daysInMonth = calendar.getActualMaximum(Calendar.DAY_OF_MONTH);
+            EventDateTime start = new EventDateTime()
+                    .setDateTime(new com.google.api.client.util.DateTime(startDateTime))
+                    .setTimeZone("Europe/Riga");
+            event.setStart(start);
 
-        calendar.set(Calendar.DAY_OF_MONTH, 1);
-        int firstDayOfWeek = calendar.get(Calendar.DAY_OF_WEEK);
+            EventDateTime end = new EventDateTime()
+                    .setDateTime(new com.google.api.client.util.DateTime(endDateTime))
+                    .setTimeZone("Europe/Riga");
+            event.setEnd(end);
 
-        List<String> calendarDays = new ArrayList<>();
+            service.events().insert("primary", event).execute();
 
-        for (int i = 1; i < firstDayOfWeek; i++) {
-            calendarDays.add("");
+            model.addAttribute("message", "Событие успешно добавлено!");
+        } catch (Exception e) {
+            model.addAttribute("error", "Ошибка добавления события: " + e.getMessage());
         }
 
-        for (int day = 1; day < daysInMonth; day++) {
-            calendarDays.add(String.valueOf(day));
-        }
-
-        model.addAttribute("days", calendarDays);
-        model.addAttribute("month", "January");
-        model.addAttribute("year", "2025");
-
-
-        return  "calendar";
+        return "calendar";
     }
 }
+
 
 

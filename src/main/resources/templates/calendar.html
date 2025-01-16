@@ -2,43 +2,116 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Calendar</title>
-    <style>
-        table {
-            width: 100%;
-            border-collapse: collapse;
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Google Calendar API</title>
+    <script src="https://accounts.google.com/gsi/client" async defer></script>
+    <script src="https://apis.google.com/js/api.js" async defer></script>
+    <script>
+        let tokenClient;
+        let gapiInited = false;
+        let gisInited = false;
+
+        const CLIENT_ID = '629034974700-2s01itj0dg2q6jdr57j6u2eq4h18i1fr.apps.googleusercontent.com';
+        const DISCOVERY_DOC = 'https://www.googleapis.com/discovery/v1/apis/calendar/v3/rest';
+        const SCOPES = 'https://www.googleapis.com/auth/calendar.events.readonly';
+
+        function gapiLoaded() {
+            gapi.load('client', initializeGapiClient);
         }
-        th, td {
-            border: 1px solid #ddd;
-            text-align: center;
-            padding: 8px;
+
+        async function initializeGapiClient() {
+            await gapi.client.init({
+                discoveryDocs: [DISCOVERY_DOC],
+            });
+            gapiInited = true;
+            maybeEnableButtons();
         }
-        th {
-            background-color: #f2f2f2;
+
+        function gisLoaded() {
+            tokenClient = google.accounts.oauth2.initTokenClient({
+                client_id: CLIENT_ID,
+                scope: SCOPES,
+                callback: '',
+            });
+            gisInited = true;
+            maybeEnableButtons();
         }
-    </style>
+
+        function maybeEnableButtons() {
+            if (gapiInited && gisInited) {
+                document.getElementById('authorize_button').style.display = 'block';
+                document.getElementById('signout_button').style.display = 'block';
+            }
+        }
+
+        function handleAuthClick() {
+            tokenClient.callback = async (resp) => {
+                if (resp.error) {
+                    throw (resp);
+                }
+                await listUpcomingEvents();
+            };
+
+            if (gapi.client.getToken() === null) {
+                tokenClient.requestAccessToken({prompt: 'consent'});
+            } else {
+                tokenClient.requestAccessToken({prompt: ''});
+            }
+        }
+
+        function handleSignoutClick() {
+            const token = gapi.client.getToken();
+            if (token !== null) {
+                google.accounts.oauth2.revoke(token.access_token, () => {
+                    gapi.client.setToken('');
+                });
+            }
+        }
+
+        async function listUpcomingEvents() {
+            try {
+                const response = await gapi.client.calendar.events.list({
+                    calendarId: 'primary',
+                    timeMin: (new Date()).toISOString(),
+                    showDeleted: false,
+                    singleEvents: true,
+                    maxResults: 10,
+                    orderBy: 'startTime',
+                });
+
+                const events = response.result.items;
+                const eventsList = document.getElementById('events');
+                eventsList.innerHTML = '';
+
+                if (events.length > 0) {
+                    for (let i = 0; i < events.length; i++) {
+                        const event = events[i];
+                        const when = event.start.dateTime || event.start.date;
+                        eventsList.innerHTML += `<li>${event.summary} (${when})</li>`;
+                    }
+                } else {
+                    eventsList.innerHTML = '<li>No upcoming events</li>';
+                }
+            } catch (error) {
+                console.error('Event request error:', error);
+            }
+        }
+    </script>
 </head>
 <body>
-<h1 th:text ="'Calendar: ' + ${month} + ' ' + ${year}"></h1>
-<table>
-    <thead>
-    <tr>
-        <th>Mon</th>
-        <th>Tue</th>
-        <th>Wed</th>
-        <th>Thu</th>
-        <th>Fri</th>
-        <th>Sat</th>
-        <th>Sun</th>
-    </tr>
-    </thead>
-    <tbody>
-    <tr th:each="day, dayStat : ${days}">
-        <td th:text="${day}" th:if="${day != ''}"></td>
-        <td th:if="${day == ''}"></td>
-        <th:block th:if="${dayStat.index % 7 == 6}"></th:block>
-    </tr>
-    </tbody>
-</table>
+<h1>Google Calendar</h1>
+
+<button id="authorize_button" style="display: none;" onclick="handleAuthClick()">Enter</button>
+<button id="signout_button" style="display: none;" onclick="handleSignoutClick()">Leave</button>
+
+<h2>Upcoming events:</h2>
+<ul id="events"></ul>
+
+<script>
+    window.onload = function () {
+        gapiLoaded();
+        gisLoaded();
+    };
+</script>
 </body>
 </html>
